@@ -1,11 +1,23 @@
 
 # Introduction
-Deployment of Azure Arc App Service Extensions on AKS clusters with the help of AZ CLI scripts.
-After setting up this environment you can easily place you Azure App Services (Web Apps, Logic Apps, Functions, EventGrid, API Management) on your AKS or ARO cluster
+Deployment of Azure Arc App Service Extensions on AKS clusters with the help of Az CLI scripts and ARM templates.
+After setting up this environment you can easily place you Azure App Services (Web Apps, Logic Apps, Functions, EventGrid, API Management) on your AKS or ARO cluster. Azure Arc App Service Extension also supports deploying these workloads (Azure App Service and Data Service) to any K8S clusters deployed to on-premises or to other cloud service providers. 
+More information about Azure Arc is available:
+https://docs.microsoft.com/en-us/azure/azure-arc/kubernetes/overview
+
+Azure Arc App Service extension exposes his services through custom locations similar to Azure Regions:
+![Customlocation](./media/customlocation.png)
+
+App service plan runs in that location:
+![AppServicePlan](./media/appserviceplan.png)
+
+Web App deployed on this App Service Plan:
+![WebApp](./media/webapp.png)
 
 ---
 > [!TIP]
 > Scripts are only for demonstrating purposes.
+
 
 # Getting Started
 
