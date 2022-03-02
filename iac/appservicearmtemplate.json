@@ -1,0 +1,98 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "name": {
+            "type": "String"
+        },
+        "kubeEnvironmentId": {
+            "type": "String"
+        },
+        "customLocationId": {
+            "type": "String"
+        },
+        "alwaysOn": {
+            "type": "Bool",
+            "defaultValue": true
+        },
+        "sku": {
+            "type": "String",
+            "defaultValue": "Kubernetes"
+        },
+        "skuCode": {
+            "type": "String",
+            "defaultValue": "K1"
+        },
+        "workerSize": {
+            "type": "String",
+            "defaultValue": "0"
+        },
+        "workerSizeId": {
+            "type": "String",
+            "defaultValue": "0"
+        },
+        "linuxFxVersion": {
+            "type": "String",
+            "defaultValue": "DOTNETCORE|6.0"
+        }
+    },
+    "variables": {   
+        "hostingPlanName": "[concat(parameters('name'), '-', 'asp')]",
+        "serverFarmResourceGroup": "[resourceGroup().name]",
+        "subscriptionId": "[subscription().subscriptionId]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2020-12-01",
+            "name": "[parameters('name')]",
+            "location": "[resourceGroup().location]",
+            "extendedLocation": {
+                "type": "customLocation",
+                "name": "[parameters('customLocationId')]"
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Web/serverfarms/', variables('hostingPlanName'))]"
+            ],
+            "tags": {},
+            "kind": "kubernetes",
+            "properties": {
+                "name": "[parameters('name')]",
+                "siteConfig": {
+                    "appSettings": [],
+                    "linuxFxVersion": "[parameters('linuxFxVersion')]",
+                    "alwaysOn": "[parameters('alwaysOn')]"
+                },
+                "serverFarmId": "[concat('/subscriptions/', variables('subscriptionId'),'/resourcegroups/', variables('serverFarmResourceGroup'), '/providers/Microsoft.Web/serverfarms/', variables('hostingPlanName'))]",
+                "clientAffinityEnabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2020-12-01",
+            "name": "[variables('hostingPlanName')]",
+            "location": "[resourceGroup().location]",
+            "extendedLocation": {
+                "type": "customLocation",
+                "name": "[parameters('customLocationId')]"
+            },
+            "dependsOn": [],
+            "tags": {},
+            "sku": {
+                "Tier": "[parameters('sku')]",
+                "Name": "[parameters('skuCode')]"
+            },
+            "kind": "kubernetes,linux",
+            "properties": {
+                "name": "[variables('hostingPlanName')]",
+                "workerSize": "[parameters('workerSize')]",
+                "workerSizeId": "[parameters('workerSizeId')]",
+                "reserved": true,
+                "kubeEnvironmentProfile": {
+                    "id": "[parameters('kubeEnvironmentId')]"
+                },
+                "zoneRedundant": false
+            }
+        }
+    ]
+}

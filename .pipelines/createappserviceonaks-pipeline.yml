@@ -1,0 +1,29 @@
+trigger:
+- none
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+ location: 'westeurope'
+ resourcegroup: 'aksarcrg.webapps'
+ appname: 'vadkertiwebapp'
+ kubeenvironmentId: '/subscriptions/XXXXXXXX-YYYY-ZZZZ-EEEE-012345678912/resourceGroups/aksarcrg/providers/Microsoft.Web/kubeEnvironments/aksarcrg-kubeenvironment'
+ customlocationId: '/subscriptions/XXXXXXXX-YYYY-ZZZZ-EEEE-012345678912/resourceGroups/aksarcrg/providers/Microsoft.ExtendedLocation/customLocations/aksarcrg-location'
+
+steps:
+- task: AzureCLI@2
+  displayName: Attach Arc to existing AKS cluster
+  inputs:
+    azureSubscription: 'jovadkerAKS'
+    addSpnToEnvironment: true
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+       echo "Kube environment: $(kubeenvironmentId)"
+       echo "Custom location: $(customlocationId)"
+
+       az group create -n $(resourcegroup) --location $(location)
+       az deployment group create -g $(resourcegroup)  --template-file $(Build.SourcesDirectory)/iac/appservicearmtemplate.json -p name=$(appname) \
+        -p kubeEnvironmentId=$(kubeenvironmentId) \
+        -p customLocationId=$(customlocationId) --debug

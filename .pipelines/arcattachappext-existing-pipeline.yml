@@ -1,0 +1,54 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- none
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+ location: 'westeurope'
+ resourcegroup: 'aksrg'
+ clustername: 'akscluster'
+ arcname: 'aksarc-cluster'
+ arcResourceGroup: 'aksarcrg'
+
+steps:
+- task: AzureCLI@2
+  displayName: Attach Arc to existing AKS cluster
+  inputs:
+    azureSubscription: 'jovadkerAKS'
+    addSpnToEnvironment: true
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+       spnid=$servicePrincipalId
+       echo "SPNID: $spnid"
+       echo "##vso[task.setvariable variable=spid;issecret=true;]$SPNID"
+       
+- bash: |
+    echo "Service principal id: $(spid)"
+
+- task: AzureCLI@2
+  displayName: Attach Arc to existing AKS cluster
+  enabled: true
+  inputs:
+    azureSubscription: 'jovadkerAKS'
+    addSpnToEnvironment: true
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+       # Execute kubelogin for AAD enabled cluster
+       sudo az aks install-cli
+       az aks get-credentials --name $(clustername) --resource-group $(resourcegroup) --overwrite-existing
+       kubelogin convert-kubeconfig -l azurecli
+       echo "change chmod to be executable"
+       sudo chmod +x $(Build.SourcesDirectory)/iac/appserviceextension.sh
+       echo "Service principal id: $servicePrincipalId"
+       spnobjectid=$(az ad sp show --id $servicePrincipalId --query objectId -o tsv)
+       echo "SPN Object Id: $spnobjectid"
+       $(Build.SourcesDirectory)/iac/appserviceextension.sh $(location) $(resourcegroup) $(clustername) $(arcname) $(arcResourceGroup) $spnobjectid
+ 

@@ -1,0 +1,24 @@
+trigger:
+- none
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  location: 'westeurope'
+  resourcegroup: 'aksrg'
+  clustername: 'akscluster'
+  acrname: 'aksregistryjv'
+
+steps:
+- task: AzureCLI@2
+  displayName: AKS IaC deployment
+  inputs:
+    azureSubscription: 'jovadkerAKS'
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+       echo "change chmod to be executable"
+       sudo chmod +x $(Build.SourcesDirectory)/iac/deployaks.sh
+       $(Build.SourcesDirectory)/iac/deployaks.sh $(location) $(resourcegroup) $(clustername) $(acrname)
+
