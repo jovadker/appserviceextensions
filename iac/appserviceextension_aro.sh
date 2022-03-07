@@ -31,8 +31,8 @@ az provider register --namespace Microsoft.KubernetesConfiguration --wait
 az extension add --upgrade --yes --name appservice-kube
 
 # Get kube.config for existing ARO cluster
-apiServer=$(az aro show -g $resourceGroup -n $aroClusterName --query apiserverProfile.url -o tsv)
-password=$(az aro list-credentials -n $aroClusterName -g $resourceGroup --query kubeadminPassword -o tsv)
+apiServer=$(az aro show -g $resourceGroup -n $aroClusterName | jq -r '.apiserverProfile.url')
+password=$(az aro list-credentials -n $aroClusterName -g $resourceGroup | jq -r '.kubeadminPassword')
 oc login $apiServer -u kubeadmin -p $password
 
 oc adm policy add-scc-to-user privileged system:serviceaccount:azure-arc:azure-arc-kube-aad-proxy-sa
