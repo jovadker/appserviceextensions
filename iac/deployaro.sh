@@ -48,6 +48,7 @@ az aro create \
   --resource-group $RESOURCEGROUP \
   --name $CLUSTER \
   --vnet aro-vnet \
+  --vnet-resource-group $RESOURCEGROUP \
   --master-subnet master-subnet \
   --worker-subnet worker-subnet \
   --master-vm-size Standard_D8s_v3 \
