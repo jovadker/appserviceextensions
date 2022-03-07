@@ -35,7 +35,9 @@ apiServer=$(az aro show -g $resourceGroup -n $aroClusterName --query apiserverPr
 password=$(az aro list-credentials -n $aroClusterName -g $resourceGroup --query kubeadminPassword -o tsv)
 oc login $apiServer -u kubeadmin -p $password
 
-kubelogin convert-kubeconfig -l azurecli
+oc adm policy add-scc-to-user privileged system:serviceaccount:azure-arc:azure-arc-kube-aad-proxy-sa
+
+#kubelogin convert-kubeconfig -l azurecli
 
 # Azure Arc resource group
 az group create -g $arcResourceGroup -l $location
