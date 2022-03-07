@@ -37,8 +37,6 @@ oc login $apiServer -u kubeadmin -p $password
 
 oc adm policy add-scc-to-user privileged system:serviceaccount:azure-arc:azure-arc-kube-aad-proxy-sa
 
-#kubelogin convert-kubeconfig -l azurecli
-
 # Azure Arc resource group
 az group create -g $arcResourceGroup -l $location
 
@@ -101,6 +99,19 @@ az k8s-extension create \
     #--configuration-settings "logProcessor.appLogs.destination=log-analytics" \
     #--configuration-protected-settings "logProcessor.appLogs.logAnalyticsConfig.customerId=${logAnalyticsWorkspaceIdEnc}" \
     #--configuration-protected-settings "logProcessor.appLogs.logAnalyticsConfig.sharedKey=${logAnalyticsKeyEnc}"
+
+# clusterrole.rbac.authorization.k8s.io/system:openshift:scc:privileged added: "appservice-ext-k8se-build-service"
+oc adm policy add-scc-to-user privileged --serviceaccount appservice-ext-k8se-build-service --namespace appservice-ns
+
+# clusterrole.rbac.authorization.k8s.io/system:openshift:scc:anyuid added: "default"
+oc adm policy add-scc-to-user anyuid --serviceaccount default --namespace appservice-ns
+
+# clusterrole.rbac.authorization.k8s.io/system:openshift:scc:hostmount-anyuid added: "default"
+oc adm policy add-scc-to-user hostmount-anyuid --serviceaccount default --namespace appservice-ns
+
+# clusterrole.rbac.authorization.k8s.io/system:openshift:scc:hostmount-anyuid added: "appservice-ext-k8se-log-processor"
+oc adm policy add-scc-to-user hostmount-anyuid --serviceaccount appservice-ext-k8se-log-processor --namespace appservice-ns
+
 
 echo "Getting the extension id"
 extensionId=$(az k8s-extension show \
